@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="utf-8"><title>claude.ai chat fixture</title></head>
+<body>
+  <!-- Decoy: marketing-style element that also uses font-claude-response.
+       isAssistantMessage MUST NOT treat this as an assistant message. -->
+  <div class="font-claude-response text-2xl">빠르게 생각하고</div>
+
+  <main>
+    <div data-testid="conversation" class="conversation">
+      <!-- User turn -->
+      <div data-testid="user-message" class="group">
+        <div class="font-user-message">코드 좀 고쳐줘</div>
+      </div>
+
+      <!-- Assistant turn (completed) -->
+      <div class="group" tabindex="-1">
+        <div class="font-claude-message">
+          <div class="grid-cols-1 grid gap-2.5">
+            <p>Here is the fix. First, update the function:</p>
+            <pre class="code-block"><code class="language-python">def add(a, b):
+    # returns the sum
+    return a + b</code></pre>
+            <p>Then call it with <code>add(1, 2)</code> and you will get <code>3</code>.</p>
+            <h2>Notes</h2>
+            <ul>
+              <li>Edge cases matter</li>
+              <li>Keep <code>None</code> handling</li>
+            </ul>
+          </div>
+        </div>
+        <!-- action toolbar appears when complete -->
+        <div class="toolbar">
+          <button aria-label="Copy">복사</button>
+          <button aria-label="Retry">다시 시도</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Composer area, mimicking claude.ai ProseMirror -->
+  <fieldset class="composer-fieldset">
+    <div contenteditable="true" class="ProseMirror" role="textbox" aria-label="메시지를 입력하세요" translate="no">
+      <p data-placeholder="Claude에게 무엇이든 물어보세요"><br class="ProseMirror-trailingBreak"></p>
+    </div>
+    <button aria-label="메시지 보내기" data-testid="send-button" type="button" disabled>보내기</button>
+  </fieldset>
+
+  <script src="../content/claude-dom.js"></script>
+</body>
+</html>

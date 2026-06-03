@@ -1,0 +1,15 @@
+# Secrets — never commit
+.env
+test/_key.js
+
+# Build artifacts
+*.zip
+
+# Playwright / dev artifacts
+.playwright-mcp/
+*.log
+login-check.png
+
+# OS
+.DS_Store
+**/.DS_Store

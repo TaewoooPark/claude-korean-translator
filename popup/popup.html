@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; width: 240px; margin: 0; padding: 14px; }
+    h1 { font-size: 14px; margin: 0 0 10px; }
+    label { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 8px 0; }
+    .key { font-size: 12px; margin-top: 10px; }
+    .key.ok { color: #16a34a; }
+    .key.no { color: #dc2626; }
+    button { margin-top: 10px; width: 100%; padding: 7px; border-radius: 7px; cursor: pointer; border: 1px solid #8886; background: #8881; font-size: 13px; }
+    .made-by { margin-top: 14px; padding-top: 12px; border-top: 1px solid #8883; text-align: center; }
+    .made-by .by { font-size: 11.5px; opacity: 0.7; margin-bottom: 8px; }
+    .made-by .by b { font-weight: 600; opacity: 1; }
+    .made-by .links { display: flex; gap: 8px; }
+    .made-by a.btn {
+      flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 6px 0; border-radius: 7px; font-size: 12px; font-weight: 600;
+      text-decoration: none; border: 1px solid #8886; color: inherit; background: #8881;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .made-by a.btn.gh:hover { background: #24292f; color: #fff; border-color: #24292f; }
+    .made-by a.btn.web:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+    .made-by a.btn svg { width: 13px; height: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Claude Korean Translator</h1>
+  <label><input id="enabled" type="checkbox" /> 활성화</label>
+  <label><input id="translateInput" type="checkbox" /> 입력 번역 (KO→EN)</label>
+  <label><input id="translateOutput" type="checkbox" /> 출력 번역 (EN→KO)</label>
+  <div id="keystatus" class="key"></div>
+  <button id="openOptions" type="button">설정 / API 키</button>
+
+  <footer class="made-by">
+    <div class="by">made by <b>Taewoo Park</b></div>
+    <div class="links">
+      <a class="btn gh" href="https://github.com/TaewoooPark" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a class="btn web" href="https://www.taewoopark.com/" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.8 1.7 2.8 4 2.8 6.5S9.8 12.8 8 14.5C6.2 12.8 5.2 10.5 5.2 8S6.2 3.2 8 1.5z"/></svg>
+        Web
+      </a>
+    </div>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

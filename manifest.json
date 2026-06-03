@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Claude Korean Translator (KO↔EN)",
+  "version": "0.1.0",
+  "description": "claude.ai 한↔영 자동 번역. 한국어로 쓰면 영어로 보내고, Claude의 영어 답변을 한국어로 보여줍니다. 본인 Anthropic API 키(Haiku)로 동작.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://claude.ai/*",
+    "https://*.claude.ai/*",
+    "https://api.anthropic.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*", "https://*.claude.ai/*"],
+      "js": ["content/claude-dom.js", "content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options/options.html",
+  "action": { "default_popup": "popup/popup.html", "default_title": "Claude Translator" },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+}

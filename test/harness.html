@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><title>content.js integration harness</title>
+  <link rel="stylesheet" href="../content/content.css">
+</head>
+<body>
+  <div class="font-claude-response text-2xl">빠르게 생각하고 (marketing decoy)</div>
+
+  <main>
+    <div data-testid="conversation" class="conversation">
+      <div data-testid="user-message" class="group"><div class="font-user-message">코드 좀 고쳐줘</div></div>
+
+      <div class="group" tabindex="-1" id="assistant-1">
+        <div class="font-claude-message">
+          <div class="grid-cols-1 grid gap-2.5">
+            <p>Here is the fix. Update the function as follows:</p>
+            <pre class="code-block"><code class="language-python">def add(a, b):
+    # returns the sum
+    return a + b</code></pre>
+            <p>Then call <code>add(1, 2)</code> to get <code>3</code>. Keep <code>None</code> handling.</p>
+          </div>
+        </div>
+        <div class="toolbar"><button aria-label="Copy">복사</button></div>
+      </div>
+    </div>
+  </main>
+
+  <fieldset class="composer-fieldset">
+    <div contenteditable="true" class="ProseMirror" role="textbox" aria-label="메시지를 입력하세요" translate="no"><p><br class="ProseMirror-trailingBreak"></p></div>
+    <button aria-label="메시지 보내기" data-testid="send-button" type="button">보내기</button>
+  </fieldset>
+
+  <!-- order matters: key -> chrome stub -> dom -> content -->
+  <script src="_key.js"></script>
+  <script src="harness-chrome-stub.js"></script>
+  <script src="../content/claude-dom.js"></script>
+  <script src="../content/content.js"></script>
+</body>
+</html>
