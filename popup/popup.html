@@ -32,7 +32,8 @@
   <label><input id="translateInput" type="checkbox" /> 입력 번역 (KO→EN)</label>
   <label><input id="translateOutput" type="checkbox" /> 출력 번역 (EN→KO)</label>
   <div id="keystatus" class="key"></div>
-  <button id="openOptions" type="button">설정 / API 키</button>
+  <div id="backendline" class="key"></div>
+  <button id="openOptions" type="button">설정 / 백엔드</button>
 
   <footer class="made-by">
     <div class="by">made by <b>Taewoo Park</b></div>
@@ -48,6 +49,8 @@
     </div>
   </footer>
 
+  <script src="../lib/code-mask.js"></script>
+  <script src="../lib/chrome-translator.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

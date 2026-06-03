@@ -8,31 +8,33 @@
     :root { color-scheme: light dark; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 640px; margin: 24px auto; padding: 0 18px; line-height: 1.5; }
     h1 { font-size: 20px; }
+    h2 { font-size: 15px; margin: 0 0 4px; }
     label { display: block; font-weight: 600; margin-top: 16px; }
     input[type=password], input[type=text] { width: 100%; padding: 8px 10px; font-size: 14px; border-radius: 8px; border: 1px solid #8884; box-sizing: border-box; }
-    .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
     button { padding: 8px 14px; border-radius: 8px; cursor: pointer; border: 1px solid #8886; background: #8881; font-size: 14px; }
     button.primary { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+    button:disabled { opacity: .6; cursor: default; }
     .toggles label { display: flex; align-items: center; gap: 8px; font-weight: 400; margin-top: 10px; }
-    .note { font-size: 12.5px; opacity: 0.8; background: #8881; padding: 10px 12px; border-radius: 8px; margin-top: 16px; }
+    .panel { border: 1px solid #8883; border-radius: 10px; padding: 14px; margin-top: 14px; }
+    .backend { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .backend label { display: flex; align-items: center; gap: 8px; font-weight: 600; margin: 0; padding: 10px 12px; border: 1px solid #8884; border-radius: 10px; cursor: pointer; flex: 1; }
+    .backend label.sel { border-color: #4f46e5; background: color-mix(in srgb, #4f46e5 10%, transparent); }
+    .backend small { display: block; font-weight: 400; opacity: .7; }
+    .note { font-size: 12.5px; opacity: 0.85; background: #8881; padding: 10px 12px; border-radius: 8px; margin-top: 14px; }
     .note code { font-size: 12px; }
-    #status { margin-top: 12px; font-size: 14px; min-height: 20px; }
-    #status.ok { color: #16a34a; }
-    #status.err { color: #dc2626; }
+    .hint { font-size: 12.5px; opacity: 0.8; margin-top: 6px; }
+    #status, #aiStatus { margin-top: 12px; font-size: 14px; min-height: 20px; }
+    .ok { color: #16a34a; } .err { color: #dc2626; } .muted { opacity: .7; }
     a { color: #6366f1; }
     hr { border: none; border-top: 1px solid #8883; margin: 20px 0; }
+    .hidden { display: none; }
+    .pill { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid #8886; }
     .made-by { margin-top: 28px; padding-top: 16px; border-top: 1px solid #8883; text-align: center; }
     .made-by .by { font-size: 13px; opacity: 0.75; margin-bottom: 10px; }
     .made-by .by b { font-weight: 600; opacity: 1; }
     .made-by .links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .made-by a.btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 14px; border-radius: 9px; font-size: 13px; font-weight: 600;
-      text-decoration: none; border: 1px solid #8886; color: inherit; background: #8881;
-      transition: background 0.15s, border-color 0.15s, transform 0.05s;
-    }
-    .made-by a.btn:hover { background: #8882; border-color: #888a; }
-    .made-by a.btn:active { transform: translateY(1px); }
+    .made-by a.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid #8886; color: inherit; background: #8881; transition: background .15s, border-color .15s; }
     .made-by a.btn.gh:hover { background: #24292f; color: #fff; border-color: #24292f; }
     .made-by a.btn.web:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
     .made-by a.btn svg { width: 15px; height: 15px; }
@@ -40,16 +42,43 @@
 </head>
 <body>
   <h1>Claude Korean Translator <span style="font-weight:400;opacity:.6">(KO↔EN)</span></h1>
-  <p>claude.ai에서 한국어로 쓰면 영어로 전송하고, Claude의 영어 응답을 한국어로 보여줍니다. 번역은 <b>본인 Anthropic API 키</b>로 Claude Haiku를 호출해 처리합니다.</p>
+  <p>claude.ai에서 한국어로 쓰면 영어로 전송하고, Claude의 영어 응답을 한국어로 보여줍니다.</p>
 
-  <label for="key">Anthropic API 키</label>
-  <input id="key" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false" />
-  <div class="row">
-    <button id="toggleVis" type="button">표시</button>
-    <button id="save" class="primary" type="button">저장</button>
-    <button id="verify" type="button">키 검증</button>
+  <h2>번역 백엔드</h2>
+  <div class="backend">
+    <label id="lblChrome"><input type="radio" name="backend" value="chrome" />
+      <span>Chrome 온디바이스 <span class="pill">무료</span><small>키 불필요 · 오프라인 · 비용 0</small></span>
+    </label>
+    <label id="lblAnthropic"><input type="radio" name="backend" value="anthropic" />
+      <span>Anthropic API 키<small>Claude Haiku · 품질↑ · 본인 키 과금</small></span>
+    </label>
   </div>
-  <div id="status"></div>
+
+  <!-- On-device panel -->
+  <div id="panel-chrome" class="panel">
+    <h2>온디바이스 번역 모델</h2>
+    <div class="hint">Chrome 내장 Translator로 기기 안에서 번역합니다. 첫 사용 시 모델을 한 번 다운로드하면 이후엔 오프라인·무료로 동작합니다. <b>응답(영어→한국어) 자동 번역을 쓰려면 아래에서 미리 다운로드</b>해두세요.</div>
+    <div class="row">
+      <button id="dlModels" class="primary" type="button">모델 다운로드 / 확인</button>
+    </div>
+    <div id="aiStatus" class="muted">상태 확인 중…</div>
+  </div>
+
+  <!-- Anthropic panel -->
+  <div id="panel-anthropic" class="panel hidden">
+    <h2>Anthropic API 키</h2>
+    <input id="key" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false" />
+    <div class="row">
+      <button id="toggleVis" type="button">표시</button>
+      <button id="save" class="primary" type="button">저장</button>
+      <button id="verify" type="button">키 검증</button>
+    </div>
+    <div id="status"></div>
+    <div class="note">
+      • API 키는 이 브라우저의 확장 저장소(<code>chrome.storage.local</code>)에만 저장, <b>background만</b> 읽습니다. 텍스트는 <code>api.anthropic.com</code> 으로만 전송, 본인 키로 과금.<br />
+      • <code>401 ... CORS requests are not allowed for this Organization</code>: Anthropic Console 조직 설정에서 클라이언트/직접 브라우저 접근(CORS) 허용 필요.
+    </div>
+  </div>
 
   <hr />
   <div class="toggles">
@@ -59,13 +88,7 @@
   </div>
 
   <div class="note">
-    <b>보안 안내</b><br />
-    • API 키는 이 브라우저의 확장 저장소(<code>chrome.storage.local</code>)에만 보관되며, 제3 서버로 전송되지 않습니다.<br />
-    • 텍스트는 오직 <code>api.anthropic.com</code> 으로만 전송됩니다. 과금은 본인 키로 이루어집니다.<br /><br />
-    <b>8.1 트러블슈팅</b><br />
-    • <code>401 ... CORS requests are not allowed for this Organization</code>: Anthropic Console 조직 설정에서 클라이언트/직접 브라우저 접근(CORS)을 허용해야 합니다.<br />
-    • <code>401 authentication_error</code>: 키 오타·비활성·크레딧 부족.<br />
-    • <code>429</code>: 레이트리밋 — 잠시 후 재시도.
+    <b>코드·마크다운 보존</b> — 코드펜스/인라인 코드/URL/파일 경로는 번역에서 제외하고 자연어만 번역합니다(온디바이스 백엔드는 플레이스홀더 마스킹, Anthropic 백엔드는 프롬프트 지시로 보존).
   </div>
 
   <footer class="made-by">
@@ -82,6 +105,8 @@
     </div>
   </footer>
 
+  <script src="../lib/code-mask.js"></script>
+  <script src="../lib/chrome-translator.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

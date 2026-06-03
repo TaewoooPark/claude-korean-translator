@@ -64,3 +64,20 @@
 - **입력 경로**(실제 `/new`): 한국어 → KO→EN 버튼 → 실제 Haiku 번역 → `editor.setContent` → 영어가 컴포저에 **정착(revert 없음, ~5초 폴링 확인)**, 전송 버튼 해결, triggerSend 호출(테스트에선 실제 전송 차단), 인라인 코드 보존. → 스크린샷 증거.
 - **출력 경로**(실제 대화): 옵저버가 `.font-claude-response` 감지 → 실제 EN→KO 번역 → 메시지 아래 한국어 블록+토글 주입, 중복 없음.
 - 로드 시 `[ctx] selector self-check OK` 콘솔 출력.
+---
+
+## 4. 온디바이스 번역 백엔드 검증 (2026-06-03, v0.2.0)
+
+API 토큰 비용 0을 위해 **Chrome 내장 Translator API(온디바이스)** 를 기본 백엔드로 추가하고, 기존 Anthropic 키 백엔드는 옵션으로 유지. 실제 Chrome(148)에서 검증:
+
+| 항목 | 결과 |
+|---|---|
+| `Translator`/`LanguageDetector` 전역 존재 | ✅ Chrome 148 |
+| ko→en / en→ko 모델 다운로드(user gesture) + 번역 | ✅ 양방향 동작 |
+| **콘텐츠 스크립트 isolated world에서 `Translator` 접근** | ✅ `Page.createIsolatedWorld`로 확인(`hasTranslator: true`) |
+| 코드 보존 마스킹(`lib/code-mask.js`) | ✅ 인라인코드/URL/이메일/경로/코드블록 보존, 프로즈만 번역(단위테스트) |
+| 실제 claude.ai에서 온디바이스 번역+마스킹+`editor.setContent` | ✅ 한국어→영어 정착, 인라인코드·코드블록 보존 |
+| 백엔드 디스패처(content.js): chrome 우선 → 미지원/미다운로드 시 Anthropic 폴백·안내 | ✅ 로직 검증 |
+| 옵션: 백엔드 선택 + 모델 다운로드/상태, 팝업 백엔드 표시 | ✅ |
+
+발견·반영: ① 첫 모델 다운로드는 user gesture 필요 → 입력 버튼 클릭(translate를 setComposerText보다 먼저 호출)이 gesture 제공, 출력용은 옵션의 "모델 다운로드" 버튼으로 사전 다운로드. ② `<source_text>`가 아닌 순수 MT라 질문을 답하지 않고 번역만 함(few-shot 불필요). ③ 코드블록을 *입력*에 넣으면 editor 문단화로 빈 줄이 약간 늘 수 있으나 코드 내용·인라인은 정확 보존.

@@ -5,33 +5,70 @@
   const DOM = window.CtxDOM;
   if (!DOM) { console.warn("[ctx] CtxDOM not loaded"); return; }
 
-  let settings = { enabled: true, translateInput: true, translateOutput: true };
+  // Capability log (helps users/devs see which backend is usable here).
+  console.info("[ctx] on-device Translator available in content script:",
+    !!(window.CtxChromeTranslator && window.CtxChromeTranslator.isSupported()));
+
+  // backend: "chrome" (on-device Translator, default) | "anthropic" (API key)
+  let settings = { enabled: true, translateInput: true, translateOutput: true, backend: "chrome" };
   const translatedMessages = new WeakSet();
+  let downloadToastShown = false;
 
   // ---- settings -------------------------------------------------------
-  chrome.storage.local.get(["enabled", "translateInput", "translateOutput"]).then((s) => {
+  chrome.storage.local.get(["enabled", "translateInput", "translateOutput", "backend"]).then((s) => {
     settings.enabled = s.enabled !== false;
     settings.translateInput = s.translateInput !== false;
     settings.translateOutput = s.translateOutput !== false;
+    settings.backend = s.backend === "anthropic" ? "anthropic" : "chrome";
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "local") return;
     if ("enabled" in changes) settings.enabled = changes.enabled.newValue !== false;
     if ("translateInput" in changes) settings.translateInput = changes.translateInput.newValue !== false;
     if ("translateOutput" in changes) settings.translateOutput = changes.translateOutput.newValue !== false;
+    if ("backend" in changes) settings.backend = changes.backend.newValue === "anthropic" ? "anthropic" : "chrome";
   });
 
-  // ---- bg bridge ------------------------------------------------------
-  async function translateViaBg(text, direction) {
+  // ---- translation dispatcher (on-device first, Anthropic fallback) ---
+  // opts.allowDownload — permit first-time on-device model download (gesture only).
+  async function translate(text, direction, opts) {
+    opts = opts || {};
+    const CT = window.CtxChromeTranslator;
+    if (settings.backend === "chrome" && CT && CT.isSupported()) {
+      try {
+        return await CT.translate(text, direction, { allowDownload: !!opts.allowDownload });
+      } catch (e) {
+        const code = e && e.code;
+        if (code === "NEEDS_DOWNLOAD") {
+          if (!downloadToastShown) {
+            downloadToastShown = true;
+            showToast("온디바이스 번역 모델이 필요합니다 — 확장 옵션에서 '모델 다운로드'를 눌러주세요.", true);
+          }
+          return null;
+        }
+        // NO_API / UNAVAILABLE → try Anthropic key as a fallback if one is set.
+        const viaKey = await translateViaBg(text, direction, true);
+        if (viaKey != null) return viaKey;
+        showToast("온디바이스 번역을 사용할 수 없습니다(브라우저 미지원). 옵션에서 Anthropic 키 백엔드로 전환하세요.", true);
+        return null;
+      }
+    }
+    // Anthropic backend
+    return translateViaBg(text, direction);
+  }
+
+  // ---- bg bridge (Anthropic API via service worker) -------------------
+  async function translateViaBg(text, direction, suppressNoKey) {
     let r;
     try {
       r = await chrome.runtime.sendMessage({ type: "TRANSLATE", payload: { text, direction } });
     } catch (e) {
+      if (suppressNoKey) return null;
       showToast("확장 연결 오류: " + String(e), true);
       return null;
     }
-    if (!r) { showToast("응답 없음 (서비스워커?)", true); return null; }
-    if (r.error) { showError(r); return null; }
+    if (!r) { if (suppressNoKey) return null; showToast("응답 없음 (서비스워커?)", true); return null; }
+    if (r.error) { if (suppressNoKey && r.error === "NO_API_KEY") return null; showError(r); return null; }
     if (r.truncated) showToast("⚠️ 응답이 max_tokens로 잘렸을 수 있습니다.", true);
     return r.text;
   }
@@ -89,7 +126,9 @@
       btn.disabled = true;
       const orig = btn.textContent;
       btn.textContent = "번역 중…";
-      const en = await translateViaBg(ko, "ko2en");
+      // allowDownload: the click is a user gesture, so on-device model may
+      // download on first use here.
+      const en = await translate(ko, "ko2en", { allowDownload: true });
       btn.disabled = false;
       btn.textContent = orig;
       if (en == null) return;
@@ -144,7 +183,7 @@
     const en = DOM.extractMessageMarkdown(node);
     if (!en || !en.trim()) return;
     // Mark pending UI.
-    const ko = await translateViaBg(en, "en2ko");
+    const ko = await translate(en, "en2ko");
     if (ko == null) { translatedMessages.delete(node); return; }
     if (!ko.trim()) return; // nothing meaningful to show; don't inject an empty block
     injectKoreanBlock(node, ko);
