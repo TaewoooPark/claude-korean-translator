@@ -30,8 +30,9 @@
 </p>
 
 <p align="center">
-  <img src="assets/demo-input.png" alt="Korean prompt translated to English in the claude.ai composer" width="760">
+  <img src="assets/demo.png" alt="Claude's English markdown answer rendered in Korean with headings, lists and code blocks preserved" width="900">
 </p>
+<p align="center"><sub>Claude's English answer (artifacts included) rendered in Korean — headings, lists, code blocks intact. The composer gets a <b>KO→EN 전송</b> button.</sub></p>
 
 ---
 

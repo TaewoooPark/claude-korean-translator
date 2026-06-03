@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>KO block render preview</title>
+<link rel="stylesheet" href="../content/content.css">
+<style>
+  body { margin:0; font-family:sans-serif; }
+  .col { padding: 28px 32px; min-height: 100vh; box-sizing: border-box; }
+  .dark { background:#262624; color:#f3f3ee; }
+  .light { background:#ffffff; color:#1a1a18; }
+  .msg { max-width: 720px; }
+  .assistant-prose { font-size:15px; line-height:1.7; opacity:.92; }
+  h2.t { font-size:13px; opacity:.5; margin:0 0 14px; font-weight:600; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; }
+  @media(max-width:900px){ .grid{grid-template-columns:1fr;} }
+</style></head>
+<body>
+<div class="grid">
+  <div class="col dark"><div class="msg">
+    <h2 class="t">DARK (claude.ai 기본)</h2>
+    <div class="font-claude-response assistant-prose">
+      <p>Here is the corrected function with a step-by-step explanation.</p>
+    </div>
+    <div id="dark-mount"></div>
+  </div></div>
+  <div class="col light"><div class="msg">
+    <h2 class="t">LIGHT</h2>
+    <div class="font-claude-response assistant-prose">
+      <p>Here is the corrected function with a step-by-step explanation.</p>
+    </div>
+    <div id="light-mount"></div>
+  </div></div>
+</div>
+
+<script src="../lib/md-render.js"></script>
+<script>
+const SAMPLE = [
+  "다음과 같이 함수를 수정하세요. 이 패턴은 **컴포넌트가 마운트될 때 한 번만** 실행됩니다.",
+  "",
+  "## 단계별 설명",
+  "",
+  "1. 먼저 의존성을 설치합니다",
+  "2. 그런 다음 `useEffect` 훅을 추가합니다",
+  "3. 빈 배열 `[]` 을 두 번째 인자로 전달합니다",
+  "",
+  "주요 포인트는 다음과 같습니다:",
+  "",
+  "- 빈 배열 `[]` 은 마운트 시 **한 번만** 실행됩니다",
+  "- 의존성이 바뀌면 *다시* 실행됩니다",
+  "- 정리(cleanup) 함수를 반환할 수 있습니다",
+  "",
+  "```js",
+  "useEffect(() => {",
+  "  console.log('mounted');",
+  "  return () => console.log('cleanup');",
+  "}, []);",
+  "```",
+  "",
+  "> 참고: 의존성 배열을 생략하면 매 렌더마다 실행되니 주의하세요.",
+  "",
+  "자세한 내용은 [공식 문서](https://react.dev/reference/react/useEffect) 를 확인하세요."
+].join("\n");
+
+function mount(id){
+  const wrap=document.createElement('div'); wrap.className='ctx-ko-translation-wrap';
+  const head=document.createElement('div'); head.className='ctx-ko-head';
+  const label=document.createElement('span'); label.className='ctx-ko-label'; label.textContent='🇰🇷 한국어 번역';
+  const tg=document.createElement('button'); tg.className='ctx-ko-toggle'; tg.textContent='접기';
+  head.appendChild(label); head.appendChild(tg);
+  const box=document.createElement('div'); box.className='ctx-ko-translation';
+  box.appendChild(window.CtxMD.render(SAMPLE));
+  wrap.appendChild(head); wrap.appendChild(box);
+  document.getElementById(id).appendChild(wrap);
+}
+mount('dark-mount'); mount('light-mount');
+</script>
+</body></html>

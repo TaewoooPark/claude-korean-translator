@@ -152,6 +152,7 @@
     if (outputObserver) outputObserver.disconnect();
 
     const debounceTimers = new WeakMap();
+    const lenAtSchedule = new WeakMap();
 
     const scan = () => {
       if (!settings.enabled || !settings.translateOutput) return;
@@ -163,14 +164,20 @@
         if (translatedMessages.has(node)) return;
         if (!DOM.isAssistantMessage(node)) return;
         if (!DOM.isMessageComplete(node)) return;
-        // Debounce per node: wait for it to be stable ~600ms.
+        // Debounce + STABILITY: only translate once the message text has stopped
+        // growing for the debounce window AND generation isn't running. This is
+        // what prevents a long, still-streaming answer from being translated
+        // half-finished (and then never re-translated).
+        const len = (node.innerText || "").length;
+        lenAtSchedule.set(node, len);
         clearTimeout(debounceTimers.get(node));
         debounceTimers.set(node, setTimeout(() => {
           if (translatedMessages.has(node)) return;
           if (DOM.isGenerating()) return;
+          if ((node.innerText || "").length !== lenAtSchedule.get(node)) return; // still growing
           translatedMessages.add(node);
           handleAssistantMessage(node);
-        }, 600));
+        }, 900));
       });
     };
 
@@ -182,30 +189,73 @@
   async function handleAssistantMessage(node) {
     const en = DOM.extractMessageMarkdown(node);
     if (!en || !en.trim()) return;
-    // Mark pending UI.
+    // Show a loading placeholder immediately (on-device translation of a long
+    // answer is line-by-line and can take a few seconds).
+    const loading = injectLoadingBlock(node);
     const ko = await translate(en, "en2ko");
+    if (loading && loading.isConnected) loading.remove();
     if (ko == null) { translatedMessages.delete(node); return; }
     if (!ko.trim()) return; // nothing meaningful to show; don't inject an empty block
     injectKoreanBlock(node, ko);
   }
 
+  function injectLoadingBlock(node) {
+    if (node.querySelector(".ctx-ko-translation-wrap")) return null;
+    const wrap = document.createElement("div");
+    wrap.className = "ctx-ko-translation-wrap ctx-ko-loading";
+    const head = document.createElement("div");
+    head.className = "ctx-ko-head";
+    const label = document.createElement("span");
+    label.className = "ctx-ko-label";
+    label.textContent = "🇰🇷 한국어 번역";
+    const spin = document.createElement("span");
+    spin.className = "ctx-ko-spin";
+    spin.textContent = "번역 중…";
+    head.appendChild(label);
+    head.appendChild(spin);
+    wrap.appendChild(head);
+    node.appendChild(wrap);
+    return wrap;
+  }
+
   function injectKoreanBlock(node, ko) {
-    if (node.querySelector(".ctx-ko-translation")) return;
+    if (node.querySelector(".ctx-ko-translation-wrap")) return;
     const wrap = document.createElement("div");
     wrap.className = "ctx-ko-translation-wrap";
 
+    const head = document.createElement("div");
+    head.className = "ctx-ko-head";
+    const label = document.createElement("span");
+    label.className = "ctx-ko-label";
+    label.textContent = "🇰🇷 한국어 번역";
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "ctx-ko-toggle";
-    toggle.textContent = "🇰🇷 한국어 번역 (접기/펼치기)";
+    toggle.textContent = "접기";
+    head.appendChild(label);
+    head.appendChild(toggle);
 
     const box = document.createElement("div");
     box.className = "ctx-ko-translation";
-    box.innerText = ko;
+    // Render markdown so headings/lists/code/line breaks display properly.
+    try {
+      if (window.CtxMD) box.appendChild(window.CtxMD.render(ko));
+      else box.textContent = ko;
+    } catch (e) { box.textContent = ko; }
 
-    toggle.addEventListener("click", () => box.classList.toggle("collapsed"));
+    // Use inline display (with !important) for hide/show — robust against
+    // claude.ai's own CSS specificity / overrides, and doesn't depend on the
+    // content.css class rule winning. preventDefault/stopPropagation so the
+    // click never reaches claude.ai's message handlers.
+    toggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const hidden = box.style.display === "none";
+      if (hidden) { box.style.removeProperty("display"); toggle.textContent = "접기"; }
+      else { box.style.setProperty("display", "none", "important"); toggle.textContent = "펼치기"; }
+    });
 
-    wrap.appendChild(toggle);
+    wrap.appendChild(head);
     wrap.appendChild(box);
     node.appendChild(wrap);
   }

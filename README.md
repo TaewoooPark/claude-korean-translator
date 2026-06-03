@@ -25,8 +25,9 @@
 ---
 
 <p align="center">
-  <img src="assets/demo-input.png" alt="claude.ai 컴포저에서 한국어가 영어로 번역된 모습" width="760">
+  <img src="assets/demo.png" alt="claude.ai에서 Claude의 마크다운 답변이 헤딩·목록·코드블록까지 보존된 한국어로 번역되어 표시되는 모습" width="900">
 </p>
+<p align="center"><sub>Claude의 영어 답변(아티팩트 포함)이 헤딩·목록·코드블록 그대로 한국어로 — 입력창엔 <b>KO→EN 전송</b> 버튼.</sub></p>
 
 ---
 
