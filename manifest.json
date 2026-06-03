@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Claude Korean Translator (KO↔EN)",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "claude.ai 한↔영 자동 번역. 한국어로 쓰면 영어로 보내고, Claude의 영어 답변을 한국어로 표시. Chrome 내장 온디바이스 번역(무료·키 불필요) 또는 본인 Anthropic API 키(Haiku) 선택.",
   "permissions": [
     "storage"
